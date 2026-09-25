@@ -1,6 +1,7 @@
 from schemas import StudentData, ChatData
 from prediction_service import model, predict_student
 from recommendation_service import generate_recommendations
+from chatbot_service import generate_chat_answer
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -52,6 +53,15 @@ def predict(data: StudentData):
         "predicted_score": predicted_score,
         "result": result,
         "recommendations": recommendations
+    }
+
+@app.post("/chat")
+def chat(data: ChatData):
+
+    answer = generate_chat_answer(data)
+
+    return {
+        "answer": answer
     }
 
 @app.get("/feature-importance")
@@ -126,264 +136,6 @@ def get_feature_importance():
 
 
 
-@app.post("/chat")
-def chat(data: ChatData):
-
-    # Nettoyer la question
-    question = data.question.lower().strip()
-
-    # Noms naturels pour les variables
-    labels = {
-        "study_hours_per_week": "temps d'étude",
-        "attendance_rate": "taux de présence",
-        "past_exam_scores": "résultats académiques précédents",
-        "internet_access_at_home": "accès aux ressources numériques",
-        "extracurricular_activities": "organisation entre études et activités extrascolaires",
-        "parental_education_level": "environnement éducatif"
-    }
-
-    # -------------------------------------------------
-    # 1. QUESTION :
-    # "Que dois-je améliorer en premier ?"
-    # -------------------------------------------------
-
-    if (
-        "améliorer en premier" in question
-        or "ameliorer en premier" in question
-        or "que dois-je améliorer" in question
-        or "que dois-je ameliorer" in question
-        or "priorité" in question
-        or "priorite" in question
-    ):
-
-        # Si aucune recommandation n'est disponible
-        if len(data.recommendations) == 0:
-
-            return {
-                "answer": (
-                    "Votre profil est déjà assez équilibré. "
-                    "Continuez à maintenir de bonnes habitudes d'étude "
-                    "et une présence régulière."
-                )
-            }
-
-        # Chercher la recommandation la plus importante
-        best_recommendation = max(
-            data.recommendations,
-            key=lambda recommendation: recommendation["estimated_gain"]
-        )
-
-        variable = best_recommendation["variable"]
-
-        variable_label = labels.get(
-            variable,
-            variable
-        )
-
-        return {
-            "answer": (
-                f"Votre priorité devrait être d'améliorer votre "
-                f"{variable_label}, car c'est actuellement l'élément "
-                f"le plus important à travailler dans votre profil."
-            )
-        }
-
-    # -------------------------------------------------
-    # 2. QUESTION :
-    # "Pourquoi ma note est-elle basse ?"
-    # -------------------------------------------------
-
-    if (
-        "pourquoi ma note" in question
-        or "pourquoi mon score" in question
-        or "note est basse" in question
-        or "note basse" in question
-        or "score faible" in question
-    ):
-
-        # Si l'étudiant a déjà un résultat positif
-        if data.result == "Pass":
-
-            return {
-                "answer": (
-                    "Votre résultat est globalement satisfaisant. "
-                    "Vous pouvez toutefois continuer à améliorer certaines "
-                    "habitudes pour progresser davantage."
-                )
-            }
-
-        # Si aucune recommandation particulière n'existe
-        if len(data.recommendations) == 0:
-
-            return {
-                "answer": (
-                    "Votre résultat semble dépendre de plusieurs éléments "
-                    "de votre profil plutôt que d'un seul point particulier. "
-                    "Essayez de maintenir une bonne régularité dans vos études "
-                    "et votre présence en cours."
-                )
-            }
-
-        # Chercher le principal point à améliorer
-        best_recommendation = max(
-            data.recommendations,
-            key=lambda recommendation: recommendation["estimated_gain"]
-        )
-
-        variable = best_recommendation["variable"]
-
-        variable_label = labels.get(
-            variable,
-            variable
-        )
-
-        return {
-            "answer": (
-                f"Votre résultat peut notamment être lié à votre "
-                f"{variable_label}. "
-                f"C'est actuellement l'un des principaux points "
-                f"que vous pouvez travailler pour améliorer votre performance."
-            )
-        }
-
-    # -------------------------------------------------
-    # 3. RÉPONSE PAR DÉFAUT
-    # -------------------------------------------------
-
-    return {
-        "answer": (
-            "Je peux vous aider à comprendre votre résultat "
-            "et à identifier les points que vous pouvez améliorer. "
-            "Vous pouvez par exemple me demander : "
-            "\"Que dois-je améliorer en premier ?\" "
-            "ou \"Pourquoi ma note est-elle basse ?\""
-        )
-    }
-
-    # Nettoyer la question pour faciliter la comparaison
-    question = data.question.lower().strip()
-
-    # -------------------------------------------------
-    # QUESTION :
-    # "Que dois-je améliorer en premier ?"
-    # -------------------------------------------------
-
-    if (
-        "améliorer en premier" in question
-        or "ameliorer en premier" in question
-        or "que dois-je améliorer" in question
-        or "que dois-je ameliorer" in question
-        or "priorité" in question
-        or "priorite" in question
-    ):
-
-        # Si aucune recommandation n'a été trouvée
-        if len(data.recommendations) == 0:
-
-            return {
-                "answer": (
-                    "Votre profil est déjà assez équilibré. "
-                    "Continuez à maintenir de bonnes habitudes "
-                    "d'étude et une présence régulière."
-                )
-            }
-
-        # Chercher la recommandation la plus importante
-        best_recommendation = max(
-            data.recommendations,
-            key=lambda recommendation: recommendation["estimated_gain"]
-        )
-
-        # Transformer les noms techniques en noms naturels
-        labels = {
-            "study_hours_per_week": "temps d'étude",
-            "attendance_rate": "taux de présence",
-            "past_exam_scores": "résultats académiques précédents",
-            "internet_access_at_home": "accès aux ressources numériques",
-            "extracurricular_activities": "organisation entre études et activités extrascolaires",
-            "parental_education_level": "environnement éducatif"
-        }
-
-        variable = best_recommendation["variable"]
-
-        variable_label = labels.get(
-            variable,
-            variable
-        )
-
-        # Réponse simple et naturelle
-        return {
-            "answer": (
-                f"Votre priorité devrait être d'améliorer votre "
-                f"{variable_label}, car c'est actuellement l'élément "
-                f"le plus important à travailler dans votre profil."
-            )
-        }
-
-    # -------------------------------------------------
-    # RÉPONSE PAR DÉFAUT
-    # -------------------------------------------------
-
-    return {
-        "answer": (
-            "Je peux vous aider à comprendre votre résultat "
-            "et à identifier les points que vous pouvez améliorer. "
-            "Vous pouvez par exemple me demander : "
-            "\"Que dois-je améliorer en premier ?\""
-        )
-    }
-
-    question = data.question.lower().strip()
-
-    if (
-        ("améliorer" in question or "ameliorer" in question)
-        and
-        (
-            "premier" in question
-            or "priorité" in question
-            or "priorite" in question
-        )
-    ):
-
-        if len(data.recommendations) > 0:
-
-            best_recommendation = data.recommendations[0]
-
-            variable = best_recommendation["variable"]
-            gain = best_recommendation["estimated_gain"]
-
-            labels = {
-                "study_hours_per_week": "votre temps d'étude",
-                "attendance_rate": "votre taux de présence"
-            }
-
-            variable_label = labels.get(
-                variable,
-                variable
-            )
-
-            answer = (
-                f"Votre priorité devrait être {variable_label}. "
-                f"Selon la simulation du modèle, cette amélioration "
-                f"pourrait augmenter votre score d'environ {gain:.2f} points."
-            )
-
-            return {
-                "answer": answer
-            }
-
-        else:
-
-            return {
-                "answer":
-                "Le modèle n'a identifié aucune amélioration prioritaire "
-                "parmi les recommandations actuellement testées."
-            }
-
-    return {
-        "answer":
-        "Je n'ai pas encore appris à répondre à cette question."
-    }
 
 @app.post("/similar-profiles")
 def get_similar_profiles(data: StudentData):
