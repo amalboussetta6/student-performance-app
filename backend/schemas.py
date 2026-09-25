@@ -13,6 +13,10 @@ class StudentData(BaseModel):
 
 class ChatData(BaseModel):
     question: str
+
     predicted_score: float
     result: str
+
     recommendations: list
+
+    student: StudentData

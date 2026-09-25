@@ -228,12 +228,38 @@ sendChatMessage() {
 
   // Préparer les données envoyées à FastAPI
   const chatData = {
-    question: question,
-    predicted_score: this.predictedScore,
-    result: this.result,
-    recommendations: this.recommendations
-  };
 
+  question: question,
+
+  predicted_score: this.predictedScore,
+
+  result: this.result,
+
+  recommendations: this.recommendations,
+
+  student: {
+    gender: this.gender,
+
+    study_hours_per_week:
+      this.studyHoursPerWeek,
+
+    attendance_rate:
+      this.attendanceRate,
+
+    past_exam_scores:
+      this.pastExamScores,
+
+    parental_education_level:
+      this.parentalEducationLevel,
+
+    internet_access_at_home:
+      this.internetAccessAtHome,
+
+    extracurricular_activities:
+      this.extracurricularActivities
+  }
+
+  };
 
   // Envoyer la question au backend
   this.http.post<any>(

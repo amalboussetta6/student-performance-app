@@ -425,25 +425,73 @@
 
 
   <!-- Question proposée -->
-  <div class="quick-questions mb-3">
+ <div class="quick-questions mb-3">
 
-    <button
-      type="button"
-      class="btn btn-outline-primary btn-sm me-2 mb-2"
-      (click)="chatQuestion = 'Que dois-je améliorer en premier ?'"
-    >
-      Que dois-je améliorer en premier ?
-    </button>
+  <button
+    type="button"
+    class="btn btn-outline-primary btn-sm me-2 mb-2"
+    (click)="chatQuestion = 'Que dois-je améliorer en premier ?'"
+  >
+    Priorité
+  </button>
 
-    <button
-      type="button"
-      class="btn btn-outline-primary btn-sm mb-2"
-      (click)="chatQuestion = 'Pourquoi ma note est-elle basse ?'"
-    >
-      Pourquoi ma note est-elle basse ?
-    </button>
+  <button
+    type="button"
+    class="btn btn-outline-primary btn-sm me-2 mb-2"
+    (click)="chatQuestion = 'Pourquoi ma note est-elle basse ?'"
+  >
+    Pourquoi cette note ?
+  </button>
 
-  </div>
+  <button
+    type="button"
+    class="btn btn-outline-primary btn-sm me-2 mb-2"
+    (click)="chatQuestion = 'Combien me manque-t-il pour réussir ?'"
+  >
+    Points manquants
+  </button>
+
+  <button
+    type="button"
+    class="btn btn-outline-primary btn-sm me-2 mb-2"
+    (click)="chatQuestion = 'Quelles sont mes recommandations ?'"
+  >
+    Mes conseils
+  </button>
+
+  <button
+    type="button"
+    class="btn btn-outline-primary btn-sm mb-2"
+    (click)="chatQuestion = 'Quel est mon résultat ?'"
+  >
+    Mon résultat
+  </button>
+
+  <button
+  type="button"
+  class="btn btn-outline-primary btn-sm me-2 mb-2"
+  (click)="chatQuestion = 'Résume mon profil'"
+>
+  Mon profil
+</button>
+
+<button
+  type="button"
+  class="btn btn-outline-primary btn-sm me-2 mb-2"
+  (click)="chatQuestion = 'Quel est mon taux de présence ?'"
+>
+  Ma présence
+</button>
+
+<button
+  type="button"
+  class="btn btn-outline-primary btn-sm me-2 mb-2"
+  (click)="chatQuestion = 'Dois-je étudier plus ?'"
+>
+  Temps d'étude
+</button>
+
+</div>
 
 
   <!-- Zone de saisie -->
