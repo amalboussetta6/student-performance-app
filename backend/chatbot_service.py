@@ -1,4 +1,5 @@
 from schemas import ChatData
+from chatbot_intents import detect_intent
 
 
 # ==========================================================
@@ -7,29 +8,18 @@ from schemas import ChatData
 
 VARIABLE_LABELS = {
     "gender": "genre",
-
-    "study_hours_per_week":
-        "temps d'étude",
-
-    "attendance_rate":
-        "taux de présence",
-
-    "past_exam_scores":
-        "résultats académiques précédents",
-
-    "parental_education_level":
-        "environnement éducatif",
-
-    "internet_access_at_home":
-        "accès aux ressources numériques",
-
+    "study_hours_per_week": "temps d'étude",
+    "attendance_rate": "taux de présence",
+    "past_exam_scores": "résultats académiques précédents",
+    "parental_education_level": "environnement éducatif",
+    "internet_access_at_home": "accès aux ressources numériques",
     "extracurricular_activities":
         "organisation entre études et activités extrascolaires"
 }
 
 
 # ==========================================================
-# RÉCUPÉRER LA MEILLEURE RECOMMANDATION
+# MEILLEURE RECOMMANDATION
 # ==========================================================
 
 def get_best_recommendation(recommendations: list):
@@ -45,7 +35,7 @@ def get_best_recommendation(recommendations: list):
 
 
 # ==========================================================
-# TRANSFORMER UN NOM TECHNIQUE EN TEXTE LISIBLE
+# NOM TECHNIQUE -> TEXTE LISIBLE
 # ==========================================================
 
 def get_variable_label(variable: str):
@@ -57,7 +47,7 @@ def get_variable_label(variable: str):
 
 
 # ==========================================================
-# CHERCHER UNE RECOMMANDATION POUR UNE VARIABLE
+# CHERCHER UNE RECOMMANDATION PRÉCISE
 # ==========================================================
 
 def find_recommendation(
@@ -69,16 +59,14 @@ def find_recommendation(
         (
             recommendation
             for recommendation in recommendations
-
-            if recommendation["variable"]
-            == variable
+            if recommendation["variable"] == variable
         ),
         None
     )
 
 
 # ==========================================================
-# CONSTRUIRE UN RÉSUMÉ DES RECOMMANDATIONS
+# RÉSUMÉ DES RECOMMANDATIONS
 # ==========================================================
 
 def get_recommendations_summary(
@@ -101,11 +89,9 @@ def get_recommendations_summary(
 
         variable = recommendation["variable"]
 
-        variable_label = get_variable_label(
-            variable
+        labels.append(
+            get_variable_label(variable)
         )
-
-        labels.append(variable_label)
 
 
     if len(labels) == 1:
@@ -125,52 +111,39 @@ def get_recommendations_summary(
 
 
 # ==========================================================
-# GÉNÉRER LA RÉPONSE DU CHATBOT
+# RÉPONSE DU CHATBOT
 # ==========================================================
 
 def generate_chat_answer(data: ChatData):
 
     # ------------------------------------------------------
-    # Préparer la question
+    # 1. Comprendre le type de question
     # ------------------------------------------------------
 
-    question = (
+    intent = detect_intent(
         data.question
-        .lower()
-        .strip()
     )
 
 
     # ======================================================
-    # 1. RÉSUMER LE PROFIL COMPLET
+    # RÉSUMÉ DU PROFIL
     # ======================================================
 
-    if (
-        "résume mon profil" in question
-        or "resume mon profil" in question
-        or "résumé de mon profil" in question
-        or "resume de mon profil" in question
-        or "mon profil" == question
-    ):
+    if intent == "profile_summary":
 
         student = data.student
 
-
         internet_text = (
             "avec accès à Internet"
-            if student.internet_access_at_home.lower()
-            == "yes"
+            if student.internet_access_at_home.lower() == "yes"
             else "sans accès à Internet"
         )
 
-
         activities_text = (
             "avec des activités extrascolaires"
-            if student.extracurricular_activities.lower()
-            == "yes"
+            if student.extracurricular_activities.lower() == "yes"
             else "sans activités extrascolaires"
         )
-
 
         return (
             f"Votre profil indique "
@@ -179,25 +152,17 @@ def generate_chat_answer(data: ChatData):
             f"de {student.attendance_rate:.2f} %, "
             f"un score académique précédent de "
             f"{student.past_exam_scores:.2f} sur 100, "
-            f"{internet_text} et "
-            f"{activities_text}. "
+            f"{internet_text} et {activities_text}. "
             f"Votre score prédit actuel est de "
             f"{data.predicted_score:.2f} sur 100."
         )
 
 
     # ======================================================
-    # 2. QUELLE EST MA NOTE ?
+    # SCORE PRÉDIT
     # ======================================================
 
-    if (
-        "quelle est ma note" in question
-        or "quel est mon score" in question
-        or "combien j'ai" in question
-        or "combien jai" in question
-        or question == "ma note"
-        or question == "mon score"
-    ):
+    if intent == "score":
 
         return (
             f"Votre score prédit est de "
@@ -206,47 +171,23 @@ def generate_chat_answer(data: ChatData):
 
 
     # ======================================================
-    # 3. QUEL EST MON RÉSULTAT ?
+    # RÉSULTAT PASS / FAIL
     # ======================================================
 
-    if (
-        "quel est mon résultat" in question
-        or "quel est mon resultat" in question
-        or question == "mon résultat"
-        or question == "mon resultat"
-    ):
-
-        if data.result == "Pass":
-
-            return (
-                f"Votre résultat est Pass avec un "
-                f"score prédit de "
-                f"{data.predicted_score:.2f} sur 100."
-            )
-
+    if intent == "result":
 
         return (
-            f"Votre résultat est Fail avec un "
-            f"score prédit de "
+            f"Votre résultat est {data.result} "
+            f"avec un score prédit de "
             f"{data.predicted_score:.2f} sur 100."
         )
 
 
     # ======================================================
-    # 4. EST-CE QUE J'AI RÉUSSI ?
+    # EST-CE QUE L'ÉTUDIANT A RÉUSSI ?
     # ======================================================
 
-    if (
-        "est-ce que j'ai réussi" in question
-        or "est ce que j'ai réussi" in question
-        or "est-ce que jai réussi" in question
-        or "est ce que jai reussi" in question
-        or "j'ai réussi" in question
-        or "jai reussi" in question
-        or "je suis admis" in question
-        or "est-ce que je suis admis" in question
-        or "est ce que je suis admis" in question
-    ):
+    if intent == "pass_status":
 
         if data.result == "Pass":
 
@@ -257,7 +198,6 @@ def generate_chat_answer(data: ChatData):
                 "sur 100."
             )
 
-
         return (
             "Non. Selon la prédiction actuelle, "
             f"votre score est de "
@@ -266,31 +206,22 @@ def generate_chat_answer(data: ChatData):
 
 
     # ======================================================
-    # 5. COMBIEN ME MANQUE-T-IL POUR RÉUSSIR ?
+    # POINTS MANQUANTS
     # ======================================================
 
-    if (
-        "combien me manque" in question
-        or "combien de points me manque" in question
-        or "combien de points manquent" in question
-        or "pour atteindre 60" in question
-        or "pour avoir 60" in question
-    ):
+    if intent == "missing_points":
 
         if data.predicted_score >= 60:
 
             return (
                 "Votre score prédit atteint déjà "
-                "le seuil de réussite de "
-                "60 sur 100."
+                "le seuil de réussite de 60 sur 100."
             )
-
 
         missing_points = round(
             60 - data.predicted_score,
             2
         )
-
 
         return (
             f"Il vous manque environ "
@@ -300,22 +231,14 @@ def generate_chat_answer(data: ChatData):
 
 
     # ======================================================
-    # 6. QUEL EST MON TAUX DE PRÉSENCE ?
+    # TAUX DE PRÉSENCE
     # ======================================================
 
-    if (
-        "mon taux de présence" in question
-        or "mon taux de presence" in question
-        or "quelle est ma présence" in question
-        or "quelle est ma presence" in question
-        or "combien de présence" in question
-        or "combien de presence" in question
-    ):
+    if intent == "attendance_value":
 
         attendance = (
             data.student.attendance_rate
         )
-
 
         return (
             f"Votre taux de présence actuel "
@@ -324,22 +247,14 @@ def generate_chat_answer(data: ChatData):
 
 
     # ======================================================
-    # 7. COMBIEN D'HEURES J'ÉTUDIE ?
+    # HEURES D'ÉTUDE
     # ======================================================
 
-    if (
-        "combien d'heures" in question
-        or "combien dheures" in question
-        or "mes heures d'étude" in question
-        or "mes heures d etude" in question
-        or "mon temps d'étude" in question
-        or "mon temps d etude" in question
-    ):
+    if intent == "study_hours_value":
 
         study_hours = (
             data.student.study_hours_per_week
         )
-
 
         return (
             f"Vous avez indiqué environ "
@@ -349,23 +264,14 @@ def generate_chat_answer(data: ChatData):
 
 
     # ======================================================
-    # 8. QUEL EST MON SCORE PRÉCÉDENT ?
+    # SCORE PRÉCÉDENT
     # ======================================================
 
-    if (
-        "ancien score" in question
-        or "score précédent" in question
-        or "score precedent" in question
-        or "anciens résultats" in question
-        or "anciens resultats" in question
-        or "résultats précédents" in question
-        or "resultats precedents" in question
-    ):
+    if intent == "past_score":
 
         past_score = (
             data.student.past_exam_scores
         )
-
 
         return (
             f"Votre score académique précédent "
@@ -374,21 +280,14 @@ def generate_chat_answer(data: ChatData):
 
 
     # ======================================================
-    # 9. ACCÈS À INTERNET
+    # INTERNET
     # ======================================================
 
-    if (
-        "internet" in question
-        or "accès internet" in question
-        or "acces internet" in question
-        or "accès à internet" in question
-        or "acces a internet" in question
-    ):
+    if intent == "internet":
 
         internet = (
             data.student.internet_access_at_home
         )
-
 
         if internet.lower() == "yes":
 
@@ -397,7 +296,6 @@ def generate_chat_answer(data: ChatData):
                 "d'un accès à Internet à domicile."
             )
 
-
         return (
             "Vous avez indiqué ne pas disposer "
             "d'un accès à Internet à domicile."
@@ -405,20 +303,14 @@ def generate_chat_answer(data: ChatData):
 
 
     # ======================================================
-    # 10. ACTIVITÉS EXTRASCOLAIRES
+    # ACTIVITÉS EXTRASCOLAIRES
     # ======================================================
 
-    if (
-        "activité extrascolaire" in question
-        or "activités extrascolaires" in question
-        or "activite extrascolaire" in question
-        or "activites extrascolaires" in question
-    ):
+    if intent == "activities":
 
         activities = (
             data.student.extracurricular_activities
         )
-
 
         if activities.lower() == "yes":
 
@@ -427,7 +319,6 @@ def generate_chat_answer(data: ChatData):
                 "à des activités extrascolaires."
             )
 
-
         return (
             "Vous avez indiqué ne pas participer "
             "à des activités extrascolaires."
@@ -435,113 +326,83 @@ def generate_chat_answer(data: ChatData):
 
 
     # ======================================================
-    # 11. DOIS-JE AMÉLIORER MA PRÉSENCE ?
+    # CONSEIL SUR LA PRÉSENCE
     # ======================================================
 
-    if (
-        "dois-je améliorer ma présence" in question
-        or "dois-je ameliorer ma presence" in question
-        or "améliorer ma présence" in question
-        or "ameliorer ma presence" in question
-        or "présence est importante" in question
-        or "presence est importante" in question
-    ):
+    if intent == "attendance_advice":
 
-        attendance_recommendation = (
-            find_recommendation(
-                data.recommendations,
-                "attendance_rate"
-            )
+        recommendation = find_recommendation(
+            data.recommendations,
+            "attendance_rate"
         )
 
+        attendance = (
+            data.student.attendance_rate
+        )
 
-        if attendance_recommendation:
+        if recommendation is not None:
 
             return (
-                f"Votre taux de présence actuel "
-                f"est de "
-                f"{data.student.attendance_rate:.2f} %. "
-                "Dans votre profil actuel, "
-                "améliorer votre présence fait partie "
-                "des pistes identifiées pour progresser."
-            )
-
-
-        return (
-            f"Votre taux de présence actuel "
-            f"est de "
-            f"{data.student.attendance_rate:.2f} %. "
-            "La présence n'apparaît pas actuellement "
-            "comme une recommandation prioritaire "
-            "pour votre profil."
-        )
-
-
-    # ======================================================
-    # 12. DOIS-JE ÉTUDIER PLUS ?
-    # ======================================================
-
-    if (
-        "dois-je étudier plus" in question
-        or "dois-je etudier plus" in question
-        or "augmenter mes heures" in question
-        or "plus d'heures d'étude" in question
-        or "plus d heures d etude" in question
-        or "augmenter mon temps d'étude" in question
-        or "augmenter mon temps d etude" in question
-    ):
-
-        study_recommendation = (
-            find_recommendation(
-                data.recommendations,
-                "study_hours_per_week"
-            )
-        )
-
-
-        if study_recommendation:
-
-            return (
-                f"Vous avez indiqué "
-                f"{data.student.study_hours_per_week:.1f} "
-                "heures d'étude par semaine. "
-                "Dans votre profil actuel, augmenter "
-                "le temps d'étude fait partie des pistes "
+                f"Votre taux de présence actuel est de "
+                f"{attendance:.2f} %. "
+                "Dans votre profil actuel, améliorer "
+                "la présence fait partie des pistes "
                 "identifiées pour progresser."
             )
 
-
         return (
-            f"Vous avez indiqué "
-            f"{data.student.study_hours_per_week:.1f} "
-            "heures d'étude par semaine. "
-            "Augmenter ce temps n'apparaît pas "
-            "actuellement comme une recommandation "
-            "prioritaire."
+            f"Votre taux de présence actuel est de "
+            f"{attendance:.2f} %. "
+            "La présence n'apparaît pas actuellement "
+            "comme une recommandation prioritaire."
         )
 
 
     # ======================================================
-    # 13. QUE DOIS-JE AMÉLIORER EN PREMIER ?
+    # CONSEIL SUR LE TEMPS D'ÉTUDE
     # ======================================================
 
-    if (
-        "améliorer en premier" in question
-        or "ameliorer en premier" in question
-        or "que dois-je améliorer" in question
-        or "que dois-je ameliorer" in question
-        or "ma priorité" in question
-        or "ma priorite" in question
-        or question == "priorité"
-        or question == "priorite"
-    ):
+    if intent == "study_advice":
+
+        recommendation = find_recommendation(
+            data.recommendations,
+            "study_hours_per_week"
+        )
+
+        study_hours = (
+            data.student.study_hours_per_week
+        )
+
+        if recommendation is not None:
+
+            return (
+                f"Vous avez indiqué "
+                f"{study_hours:.1f} heures d'étude "
+                "par semaine. Dans votre profil actuel, "
+                "augmenter le temps d'étude fait partie "
+                "des pistes identifiées pour progresser."
+            )
+
+        return (
+            f"Vous avez indiqué "
+            f"{study_hours:.1f} heures d'étude "
+            "par semaine. Augmenter ce temps "
+            "n'apparaît pas actuellement comme "
+            "une recommandation prioritaire."
+        )
+
+
+    # ======================================================
+    # PRIORITÉ
+    # ======================================================
+
+    if intent == "priority":
 
         best_recommendation = (
             get_best_recommendation(
                 data.recommendations
             )
         )
-
 
         if best_recommendation is None:
 
@@ -561,7 +422,6 @@ def generate_chat_answer(data: ChatData):
             get_variable_label(variable)
         )
 
-
         return (
             f"Votre priorité devrait être "
             f"d'améliorer votre {variable_label}. "
@@ -572,18 +432,10 @@ def generate_chat_answer(data: ChatData):
 
 
     # ======================================================
-    # 14. QUELLES SONT MES RECOMMANDATIONS ?
+    # LISTE DES RECOMMANDATIONS
     # ======================================================
 
-    if (
-        "mes recommandations" in question
-        or "quelles recommandations" in question
-        or "quels conseils" in question
-        or "donne-moi des conseils" in question
-        or "donne moi des conseils" in question
-        or "que puis-je améliorer" in question
-        or "que puis-je ameliorer" in question
-    ):
+    if intent == "recommendations":
 
         return get_recommendations_summary(
             data.recommendations
@@ -591,18 +443,10 @@ def generate_chat_answer(data: ChatData):
 
 
     # ======================================================
-    # 15. POURQUOI MA NOTE EST-ELLE BASSE ?
+    # POURQUOI LE SCORE EST FAIBLE ?
     # ======================================================
 
-    if (
-        "pourquoi ma note" in question
-        or "pourquoi mon score" in question
-        or "note est basse" in question
-        or "note basse" in question
-        or "score faible" in question
-        or "pourquoi j'ai cette note" in question
-        or "pourquoi jai cette note" in question
-    ):
+    if intent == "low_score_reason":
 
         if data.result == "Pass":
 
@@ -626,10 +470,7 @@ def generate_chat_answer(data: ChatData):
             return (
                 "Votre résultat semble dépendre "
                 "de plusieurs éléments de votre profil "
-                "plutôt que d'un seul point particulier. "
-                "Essayez de maintenir une bonne "
-                "régularité dans vos études et "
-                "votre présence en cours."
+                "plutôt que d'un seul point particulier."
             )
 
 
@@ -641,28 +482,19 @@ def generate_chat_answer(data: ChatData):
             get_variable_label(variable)
         )
 
-
         return (
             f"Votre résultat peut notamment être "
             f"lié à votre {variable_label}. "
             "C'est actuellement l'un des principaux "
-            "points que vous pouvez travailler "
-            "pour améliorer votre performance."
+            "points que vous pouvez travailler."
         )
 
 
     # ======================================================
-    # 16. EST-CE QUE MON RÉSULTAT EST BON ?
+    # QUALITÉ DU RÉSULTAT
     # ======================================================
 
-    if (
-        "mon résultat est bon" in question
-        or "mon resultat est bon" in question
-        or "ma note est bonne" in question
-        or "mon score est bon" in question
-        or "est-ce une bonne note" in question
-        or "est ce une bonne note" in question
-    ):
+    if intent == "result_quality":
 
         if data.predicted_score >= 60:
 
@@ -671,7 +503,6 @@ def generate_chat_answer(data: ChatData):
                 f"{data.predicted_score:.2f} sur 100 "
                 "et dépasse le seuil de réussite."
             )
-
 
         return (
             f"Votre score prédit est de "
@@ -683,13 +514,12 @@ def generate_chat_answer(data: ChatData):
 
 
     # ======================================================
-    # 17. QUESTION NON RECONNUE
+    # QUESTION NON RECONNUE
     # ======================================================
 
     return (
-        "Je peux vous aider à comprendre votre résultat "
-        "et votre profil. Vous pouvez me demander par "
-        "exemple : "
+        "Je n'ai pas reconnu précisément votre question. "
+        "Vous pouvez me demander par exemple : "
         "\"Résume mon profil\", "
         "\"Quelle est ma note ?\", "
         "\"Est-ce que j'ai réussi ?\", "
