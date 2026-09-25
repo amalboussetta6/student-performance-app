@@ -1,6 +1,7 @@
+from schemas import StudentData, ChatData
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+
 
 import joblib
 import pandas as pd
@@ -26,15 +27,6 @@ app.add_middleware(
 model = joblib.load("student_performance_model.joblib")
 
 
-class StudentData(BaseModel):
-
-    gender: str
-    study_hours_per_week: float
-    attendance_rate: float
-    past_exam_scores: float
-    parental_education_level: str
-    internet_access_at_home: str
-    extracurricular_activities: str
 
 @app.get("/")
 def home():
@@ -209,12 +201,7 @@ def get_feature_importance():
         "features": features
     }
 
-class ChatData(BaseModel):
 
-    question: str
-    predicted_score: float
-    result: str
-    recommendations: list
 
 
 @app.post("/chat")
