@@ -1,22 +1,29 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from schemas import StudentData, ChatData
-from prediction_service import model, predict_student
+from prediction_service import predict_student
 from recommendation_service import generate_recommendations
 from chatbot_service import generate_chat_answer
 from similarity_service import find_similar_profiles
 from analysis_service import calculate_feature_importance
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+
+# --------------------------------------------------
+# Création de l'application FastAPI
+# --------------------------------------------------
+
+app = FastAPI(
+    title="Student Performance Prediction API",
+    description="API de prédiction de la performance académique",
+    version="1.0.0"
+)
 
 
+# --------------------------------------------------
+# Configuration CORS
+# --------------------------------------------------
 
-import pandas as pd
-
-from sklearn.inspection import permutation_importance
-from sklearn.model_selection import train_test_split
-
-
-app = FastAPI()
 origins = [
     "http://localhost:4200",
     "http://127.0.0.1:4200"
@@ -31,16 +38,21 @@ app.add_middleware(
 )
 
 
-
-
+# --------------------------------------------------
+# Route de test
+# --------------------------------------------------
 
 @app.get("/")
 def home():
 
-    return {"message": "API fonctionne"}
+    return {
+        "message": "Student Performance API fonctionne"
+    }
 
 
-
+# --------------------------------------------------
+# Prédiction
+# --------------------------------------------------
 
 @app.post("/predict")
 def predict(data: StudentData):
@@ -58,14 +70,10 @@ def predict(data: StudentData):
         "recommendations": recommendations
     }
 
-@app.post("/chat")
-def chat(data: ChatData):
 
-    answer = generate_chat_answer(data)
-
-    return {
-        "answer": answer
-    }
+# --------------------------------------------------
+# Importance des variables
+# --------------------------------------------------
 
 @app.get("/feature-importance")
 def get_feature_importance():
@@ -76,10 +84,26 @@ def get_feature_importance():
         "features": features
     }
 
+
+# --------------------------------------------------
+# Assistant conversationnel
+# --------------------------------------------------
+
+@app.post("/chat")
+def chat(data: ChatData):
+
+    answer = generate_chat_answer(data)
+
+    return {
+        "answer": answer
+    }
+
+
+# --------------------------------------------------
+# Profils similaires
+# --------------------------------------------------
+
 @app.post("/similar-profiles")
 def get_similar_profiles(data: StudentData):
 
     return find_similar_profiles(data)
-
-
-
