@@ -1,5 +1,6 @@
 from schemas import StudentData, ChatData
 from prediction_service import model, predict_student
+from recommendation_service import generate_recommendations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -35,73 +36,7 @@ def home():
     return {"message": "API fonctionne"}
 
 
-def generate_recommendations(data, current_score):
 
-    recommendations = []
-
-    # 1. Tester une augmentation des heures d'étude
-    if data.study_hours_per_week < 39:
-
-        improved_hours = min(
-            data.study_hours_per_week + 5,
-            39
-        )
-
-        test_df = pd.DataFrame([{
-            "gender": data.gender,
-            "study_hours_per_week": improved_hours,
-            "attendance_rate": data.attendance_rate,
-            "past_exam_scores": data.past_exam_scores,
-            "parental_education_level": data.parental_education_level,
-            "internet_access_at_home": data.internet_access_at_home,
-            "extracurricular_activities": data.extracurricular_activities
-        }])
-
-        new_score = float(model.predict(test_df)[0])
-
-        gain = new_score - current_score
-
-        if gain > 0.5:
-            recommendations.append({
-                "variable": "study_hours_per_week",
-                "message": "Augmenter votre temps d'étude pourrait améliorer votre performance.",
-                "estimated_gain": round(gain, 2)
-            })
-    # 2. Tester une amélioration du taux de présence
-    if data.attendance_rate < 100:
-
-        improved_attendance = min(
-            data.attendance_rate + 10,
-            100
-        )
-
-        test_df = pd.DataFrame([{
-            "gender": data.gender,
-            "study_hours_per_week": data.study_hours_per_week,
-            "attendance_rate": improved_attendance,
-            "past_exam_scores": data.past_exam_scores,
-            "parental_education_level": data.parental_education_level,
-            "internet_access_at_home": data.internet_access_at_home,
-            "extracurricular_activities": data.extracurricular_activities
-        }])
-
-        new_score = float(model.predict(test_df)[0])
-
-        gain = new_score - current_score
-
-        if gain > 0.5:
-            recommendations.append({
-                "variable": "attendance_rate",
-                "message": "Améliorer votre taux de présence pourrait augmenter votre performance.",
-                "estimated_gain": round(gain, 2)
-            })
-
-    recommendations = sorted(
-        recommendations,
-        key=lambda recommendation: recommendation["estimated_gain"],
-        reverse=True
-    )
-    return recommendations
 
 @app.post("/predict")
 def predict(data: StudentData):
