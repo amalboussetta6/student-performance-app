@@ -2,6 +2,7 @@ from schemas import StudentData, ChatData
 from prediction_service import model, predict_student
 from recommendation_service import generate_recommendations
 from chatbot_service import generate_chat_answer
+from similarity_service import find_similar_profiles
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -133,170 +134,10 @@ def get_feature_importance():
         "features": features
     }
 
-
-
-
-
 @app.post("/similar-profiles")
 def get_similar_profiles(data: StudentData):
 
-    # Charger le dataset
-    df = pd.read_csv("student_performance_dataset.csv")
-
-    # Normaliser les noms des colonnes
-    df.columns = (
-        df.columns
-        .str.strip()
-        .str.lower()
-        .str.replace(" ", "_", regex=False)
-    )
-
-    # Supprimer les doublons
-    df = df.drop_duplicates().reset_index(drop=True)
+    return find_similar_profiles(data)
 
 
-    # -------------------------------------------------
-    # 1. VARIABLES NUMÉRIQUES
-    # -------------------------------------------------
 
-    numeric_values = {
-        "study_hours_per_week": data.study_hours_per_week,
-        "attendance_rate": data.attendance_rate,
-        "past_exam_scores": data.past_exam_scores
-    }
-
-
-    # -------------------------------------------------
-    # 2. VARIABLES CATÉGORIELLES
-    # -------------------------------------------------
-
-    categorical_values = {
-        "gender": data.gender,
-        "parental_education_level": data.parental_education_level,
-        "internet_access_at_home": data.internet_access_at_home,
-        "extracurricular_activities": data.extracurricular_activities
-    }
-
-
-    # Distance initiale = 0
-    df["distance"] = 0.0
-
-
-    # -------------------------------------------------
-    # 3. DISTANCE POUR LES VARIABLES NUMÉRIQUES
-    # -------------------------------------------------
-
-    for column, user_value in numeric_values.items():
-
-        column_min = df[column].min()
-        column_max = df[column].max()
-
-        column_range = column_max - column_min
-
-        if column_range > 0:
-
-            df["distance"] += (
-                abs(df[column] - user_value)
-                / column_range
-            )
-
-
-    # -------------------------------------------------
-    # 4. DISTANCE POUR LES VARIABLES CATÉGORIELLES
-    # -------------------------------------------------
-
-    for column, user_value in categorical_values.items():
-
-        df["distance"] += (
-            df[column] != user_value
-        ).astype(int)
-
-
-    # -------------------------------------------------
-    # 5. MOYENNE DE LA DISTANCE
-    # -------------------------------------------------
-
-    total_variables = (
-        len(numeric_values)
-        + len(categorical_values)
-    )
-
-    df["distance"] = (
-        df["distance"]
-        / total_variables
-    )
-
-
-    # -------------------------------------------------
-    # 6. PRENDRE LES 5 PROFILS LES PLUS PROCHES
-    # -------------------------------------------------
-
-    similar_students = (
-        df
-        .sort_values("distance")
-        .head(5)
-    )
-
-
-    # -------------------------------------------------
-    # 7. PERFORMANCE MOYENNE
-    # -------------------------------------------------
-
-    average_score = round(
-        float(
-            similar_students["final_exam_score"].mean()
-        ),
-        2
-    )
-
-
-    # Pourcentage d'étudiants ayant réussi
-    pass_rate = round(
-        float(
-            (
-                similar_students["pass_fail"]
-                .str.lower()
-                == "pass"
-            ).mean()
-            * 100
-        ),
-        2
-    )
-
-
-    # -------------------------------------------------
-    # 8. PRÉPARER UNE PETITE LISTE DES PROFILS
-    # -------------------------------------------------
-
-    profiles = []
-
-    for _, student in similar_students.iterrows():
-
-        profiles.append({
-            "study_hours_per_week":
-                float(student["study_hours_per_week"]),
-
-            "attendance_rate":
-                round(float(student["attendance_rate"]), 2),
-
-            "past_exam_scores":
-                float(student["past_exam_scores"]),
-
-            "final_exam_score":
-                float(student["final_exam_score"]),
-
-            "result":
-                student["pass_fail"]
-        })
-
-
-    # -------------------------------------------------
-    # 9. RETOURNER LE RÉSULTAT
-    # -------------------------------------------------
-
-    return {
-        "number_of_profiles": len(similar_students),
-        "average_score": average_score,
-        "pass_rate": pass_rate,
-        "profiles": profiles
-    }
