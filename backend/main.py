@@ -1,9 +1,10 @@
 from schemas import StudentData, ChatData
+from prediction_service import model, predict_student
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 
-import joblib
+
 import pandas as pd
 
 from sklearn.inspection import permutation_importance
@@ -24,7 +25,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-model = joblib.load("student_performance_model.joblib")
+
 
 
 
@@ -105,26 +106,12 @@ def generate_recommendations(data, current_score):
 @app.post("/predict")
 def predict(data: StudentData):
 
-    student_df = pd.DataFrame([{
-        "gender": data.gender,
-        "study_hours_per_week": data.study_hours_per_week,
-        "attendance_rate": data.attendance_rate,
-        "past_exam_scores": data.past_exam_scores,
-        "parental_education_level": data.parental_education_level,
-        "internet_access_at_home": data.internet_access_at_home,
-        "extracurricular_activities": data.extracurricular_activities
-    }])
+    predicted_score, result = predict_student(data)
 
-    prediction = model.predict(student_df)[0]
-
-    predicted_score = round(float(prediction), 2)
-
-    recommendations = generate_recommendations(data, predicted_score)
-
-    if predicted_score >= 60:
-        result = "Pass"
-    else:
-        result = "Fail"
+    recommendations = generate_recommendations(
+        data,
+        predicted_score
+    )
 
     return {
         "predicted_score": predicted_score,
