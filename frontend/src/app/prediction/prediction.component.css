@@ -1,0 +1,542 @@
+/* ==========================================================
+   CARTE PRINCIPALE
+   ========================================================== */
+
+.prediction-card {
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.96);
+  overflow: hidden;
+}
+
+
+/* ==========================================================
+   FORMULAIRE
+   ========================================================== */
+
+.form-label {
+  color: #344054;
+}
+
+.form-control,
+.form-select {
+  min-height: 50px;
+
+  border-radius: 12px;
+  border: 1px solid #dce3ec;
+
+  padding-left: 14px;
+  padding-right: 14px;
+
+  transition: all 0.2s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #86b7fe;
+
+  box-shadow:
+    0 0 0 0.2rem rgba(13, 110, 253, 0.12);
+}
+
+
+/* ==========================================================
+   BOUTON PRÉDIRE
+   ========================================================== */
+
+.btn-predict {
+  min-height: 54px;
+
+  border-radius: 14px;
+
+  font-weight: 600;
+
+  box-shadow:
+    0 8px 20px rgba(13, 110, 253, 0.20);
+
+  transition: all 0.2s ease;
+}
+
+.btn-predict:hover:not(:disabled) {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 12px 25px rgba(13, 110, 253, 0.25);
+}
+
+
+/* ==========================================================
+   RÉSULTAT
+   ========================================================== */
+
+.result-card {
+  padding: 22px;
+
+  border-radius: 16px;
+  border: 1px solid;
+
+  transition: all 0.3s ease;
+}
+
+.result-pass {
+  background: #f0fff4;
+  border-color: #b7e4c7;
+}
+
+.result-fail {
+  background: #fff5f5;
+  border-color: #ffc9c9;
+}
+
+.score-number {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.score-total {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #6c757d;
+}
+
+
+/* ==========================================================
+   ERREUR
+   ========================================================== */
+
+.alert {
+  border-radius: 12px;
+}
+
+
+/* ==========================================================
+   RECOMMANDATIONS PERSONNALISÉES
+   ========================================================== */
+
+.recommendations-card {
+  padding: 24px;
+
+  border-radius: 18px;
+
+  background: #ffffff;
+
+  border: 1px solid #e7ecf3;
+
+  box-shadow:
+    0 8px 25px rgba(16, 24, 40, 0.04);
+}
+
+.recommendation-item {
+  position: relative;
+
+  padding: 20px;
+
+  margin-bottom: 16px;
+
+  border-radius: 16px;
+
+  background: #f8faff;
+
+  border: 1px solid #e4ebf5;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.recommendation-item:hover {
+  transform: translateY(-2px);
+
+  border-color: #cfdcf0;
+
+  box-shadow:
+    0 8px 20px rgba(13, 110, 253, 0.07);
+}
+
+.recommendation-item:last-child {
+  margin-bottom: 0;
+}
+
+
+/* Petite carte valeur actuelle / valeur simulée */
+
+.recommendation-item .bg-light {
+  background: #ffffff !important;
+
+  border-color: #e1e8f2 !important;
+
+  transition: all 0.2s ease;
+}
+
+.recommendation-item .bg-light:hover {
+  border-color: #b8cae3 !important;
+
+  background: #fbfcff !important;
+}
+
+
+/* Badge de priorité */
+
+.recommendation-item .text-bg-primary {
+  border-radius: 999px;
+
+  padding: 6px 12px;
+
+  font-size: 0.75rem;
+
+  font-weight: 600;
+}
+
+
+/* Gain estimé */
+
+.gain-badge {
+  display: inline-block;
+
+  flex-shrink: 0;
+
+  padding: 8px 14px;
+
+  border-radius: 999px;
+
+  background: #e8f3ff;
+
+  color: #0d6efd;
+
+  font-weight: 700;
+
+  font-size: 0.9rem;
+
+  white-space: nowrap;
+}
+
+
+/* ==========================================================
+   PROFILS SIMILAIRES
+   ========================================================== */
+
+.similar-card {
+  padding: 24px;
+
+  border-radius: 18px;
+
+  background: #ffffff;
+
+  border: 1px solid #e7ecf3;
+
+  box-shadow:
+    0 8px 25px rgba(16, 24, 40, 0.04);
+}
+
+.similar-stat {
+  height: 100%;
+
+  padding: 18px;
+
+  border-radius: 14px;
+
+  background: #f8faff;
+
+  border: 1px solid #e4ebf5;
+}
+
+.similar-stat-value {
+  margin-top: 6px;
+
+  font-size: 1.6rem;
+
+  font-weight: 700;
+
+  color: #1f2937;
+}
+
+.similar-stat-value span {
+  font-size: 0.9rem;
+
+  font-weight: 500;
+
+  color: #6c757d;
+}
+
+
+/* ==========================================================
+   TABLEAU DES PROFILS
+   ========================================================== */
+
+.table {
+  margin-bottom: 0;
+}
+
+.table th {
+  color: #667085;
+
+  font-size: 0.85rem;
+
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+.table td {
+  color: #344054;
+
+  vertical-align: middle;
+}
+
+.table tbody tr {
+  transition: background 0.2s ease;
+}
+
+.table tbody tr:hover {
+  background: #f8faff;
+}
+
+
+/* ==========================================================
+   CHATBOT
+   ========================================================== */
+
+.chat-card {
+  padding: 24px;
+
+  border-radius: 18px;
+
+  background: #ffffff;
+
+  border: 1px solid #e7ecf3;
+
+  box-shadow:
+    0 8px 25px rgba(16, 24, 40, 0.04);
+}
+
+
+/* Questions rapides */
+
+.quick-questions .btn {
+  border-radius: 999px;
+
+  transition: all 0.2s ease;
+}
+
+.quick-questions .btn:hover {
+  transform: translateY(-1px);
+}
+
+
+/* Champ chatbot */
+
+.chat-input {
+  min-height: 52px;
+}
+
+
+/* Zone des messages */
+
+.chat-messages {
+  padding: 18px;
+
+  border-radius: 16px;
+
+  background: #f8faff;
+
+  border: 1px solid #e7ecf3;
+}
+
+.message-row {
+  display: flex;
+
+  margin-bottom: 14px;
+}
+
+.message-row:last-child {
+  margin-bottom: 0;
+}
+
+.user-row {
+  justify-content: flex-end;
+}
+
+.assistant-row {
+  justify-content: flex-start;
+}
+
+
+/* Message générique */
+
+.chat-message {
+  max-width: 80%;
+
+  padding: 13px 16px;
+
+  border-radius: 16px;
+
+  line-height: 1.5;
+
+  word-break: break-word;
+}
+
+
+/* Message utilisateur */
+
+.user-message {
+  background: #0d6efd;
+
+  color: #ffffff;
+
+  border-bottom-right-radius: 5px;
+}
+
+
+/* Message assistant */
+
+.assistant-message {
+  background: #ffffff;
+
+  color: #344054;
+
+  border: 1px solid #e1e7ef;
+
+  border-left: 4px solid #0d6efd;
+
+  border-bottom-left-radius: 5px;
+}
+
+
+/* Nom utilisateur / assistant */
+
+.message-sender {
+  margin-bottom: 5px;
+
+  font-size: 0.78rem;
+
+  font-weight: 700;
+
+  opacity: 0.8;
+}
+
+
+/* ==========================================================
+   IMPORTANCE DES VARIABLES
+   ========================================================== */
+
+.importance-card {
+  padding: 24px;
+
+  border-radius: 18px;
+
+  background: #ffffff;
+
+  border: 1px solid #e7ecf3;
+
+  box-shadow:
+    0 8px 25px rgba(16, 24, 40, 0.04);
+}
+
+.feature-item:last-child {
+  margin-bottom: 0 !important;
+}
+
+.progress {
+  height: 10px;
+
+  border-radius: 20px;
+
+  background: #e9eef5;
+
+  overflow: hidden;
+}
+
+.progress-bar {
+  border-radius: 20px;
+
+  background: linear-gradient(
+    90deg,
+    #0d6efd,
+    #6f42c1
+  );
+
+  transition: width 0.6s ease;
+}
+
+.importance-value {
+  font-size: 0.9rem;
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+
+@media (max-width: 768px) {
+
+  .recommendations-card,
+  .similar-card,
+  .chat-card,
+  .importance-card {
+    padding: 20px;
+  }
+
+  .recommendation-item {
+    padding: 16px;
+  }
+
+  .chat-message {
+    max-width: 90%;
+  }
+
+  .gain-badge {
+    font-size: 0.85rem;
+  }
+
+}
+
+
+@media (max-width: 576px) {
+
+  .prediction-card {
+    border-radius: 18px;
+  }
+
+  .card-body {
+    padding: 24px !important;
+  }
+
+  .score-number {
+    font-size: 1.7rem;
+  }
+
+  .recommendations-card,
+  .similar-card,
+  .chat-card,
+  .importance-card {
+    padding: 18px;
+
+    border-radius: 16px;
+  }
+
+  .recommendation-item {
+    padding: 15px;
+  }
+
+  .chat-message {
+    max-width: 95%;
+  }
+
+  .quick-questions .btn {
+    width: 100%;
+
+    margin-right: 0 !important;
+  }
+
+  .gain-badge {
+    display: block;
+
+    width: 100%;
+
+    text-align: center;
+
+    margin-top: 8px;
+  }
+
+}
